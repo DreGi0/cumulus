@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Questions and ideas
+    url: https://github.com/DreGi0/cumulus/discussions
+    about: Ask questions and share ideas here (enable GitHub Discussions first).
+  - name: Security vulnerability
+    url: https://github.com/DreGi0/cumulus/security/advisories/new
+    about: Report vulnerabilities privately. Do not open a public issue.
