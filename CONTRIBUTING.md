@@ -48,7 +48,9 @@ PRD  ->  decision records (ADR)  ->  task spec  ->  pull request
 
 ## Development setup
 
-<!-- Fill in when the monorepo scaffolding lands (milestone M1). -->
+The repository currently contains documentation only, so there is nothing to
+build or run yet. Setup instructions will be added with the monorepo
+scaffolding in milestone M1.
 
 Requirements, install steps and test commands will be documented here.
 Tooling is always project-local. Do not rely on global installs.
@@ -82,9 +84,7 @@ request when AI tools were used for a significant part of the change.
 
 ## Questions
 
-<!-- Replace with GitHub Discussions once enabled. -->
-
-Open an issue with the `question` label.
+Ask in [GitHub Discussions](https://github.com/DreGi0/cumulus/discussions).
 
 ## License of contributions
 

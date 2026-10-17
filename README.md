@@ -5,13 +5,9 @@ Open-source vector editor and animation toolkit for mascots, icons and UI motion
 ![Status: pre-alpha](https://img.shields.io/badge/status-pre--alpha-orange)
 ![License: MIT](https://img.shields.io/badge/license-MIT-blue)
 
-<!-- Add build, npm and coverage badges once CI and publishing exist. -->
-
 > [!WARNING]
 > Cumulus is in the planning phase. Nothing is installable yet.
 > The plan lives in the [PRD](docs/PRD.md) and the [decision records](docs/decisions/).
-
-<!-- Banner or demo GIF: add the image to docs/assets/ and embed it here. -->
 
 ## Table of Contents
 

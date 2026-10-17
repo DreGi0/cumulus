@@ -15,11 +15,8 @@ versions once packages are published.
 
 Please do **not** open a public issue for security problems.
 
-Report privately using either:
-
-1. GitHub private vulnerability reporting: go to the repository's
-   **Security** tab and choose **Report a vulnerability**.
-2. Email andreiraheta28@gmail.com.
+Report privately through GitHub private vulnerability reporting: open the
+repository's **Security** tab and choose **Report a vulnerability**.
 
 Include:
 
