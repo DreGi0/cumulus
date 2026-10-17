@@ -80,7 +80,13 @@ Ask once, with the options and your recommendation.
 - Code, comments and all repository documentation are written in English.
 - Install nothing globally. Use project-local tooling only (npm workspaces,
   `npx`, Docker if needed).
-- Commands: none yet. Add install, build, test and lint here at M1.
+- Commands, from the repo root (no build until M4, ADR-004):
+  - Install: `npm ci` (`npm install` only when changing dependencies)
+  - Typecheck: `npm run typecheck`
+  - Test: `npm test`, or `CI=true npm test` as in CI;
+    `npx vitest run -u` regenerates the committed JSON Schema
+  - Lint: `npm run lint`
+  - Format: `npm run format`
 - Commit and branch style: see `CONTRIBUTING.md`.
 - Mark unfinished text in documents as `<<REPLACE: ...>>`.
 
