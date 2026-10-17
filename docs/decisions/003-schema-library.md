@@ -1,6 +1,6 @@
 # ADR-003: Schema library
 
-- Status: Proposed
+- Status: Accepted
 - Date: 2026-10-16
 
 ## Context
@@ -40,8 +40,6 @@ React Native. Checked by the M1 `playground-rn` task.
 | Hand-written JSON Schema + Ajv          | Language-neutral contract, full expressiveness                       | Verbose; types are a second source or generated; same Ajv error and eval issues          |
 
 ## Decision
-
-Proposed until the maintainer confirms.
 
 Use **Zod v4** (`zod@^4.6`) as the only runtime dependency of `core`.
 
