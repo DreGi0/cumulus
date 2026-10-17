@@ -1,6 +1,6 @@
 # TASK-002: CI workflow
 
-- Status: Ready
+- Status: Done
 - Milestone: M1
 - Decisions that apply: ADR-001 (rule 5), ADR-004, ADR-005
 
@@ -53,7 +53,7 @@ Where each line comes from (reasons and their sources are in ADR-005):
 | --------------------------------------- | ------------ | -------------------------------------------------------------------------- |
 | `on:`                                   | 1            |                                                                            |
 | `run:` steps                            | 2            | `npm test` relies on GitHub's `CI=true`                                    |
-| `strategy:`                             | 3            | `22`, `24`, `26` resolve to 22.23.3, 24.22.0, 26.12.0 [S3]                 |
+| `strategy:`                             | 3            | First run resolved 22.23.3, 24.21.0, 26.12.0: setup-node takes the runner's cached release of a line, which can trail [S3] by days |
 | `permissions:`                          | 4            |                                                                            |
 | `persist-credentials: false`            | 5            |                                                                            |
 | `cache: npm`                            | 6            | Needed explicitly: the root `package.json` has no `packageManager` field   |
@@ -81,17 +81,17 @@ Each test is pass/fail and runnable. `<pr>` is the implementation PR,
 
 Local, before opening the PR:
 
-- [ ] Precondition, ADR-005 rule 10 still applied:
+- [x] Precondition, ADR-005 rule 10 still applied:
       `gh api repos/DreGi0/cumulus/actions/permissions --jq '"\(.enabled) \(.allowed_actions) \(.sha_pinning_required)"'`
       prints `true selected true`, and
       `gh api repos/DreGi0/cumulus/actions/permissions/selected-actions --jq .github_owned_allowed`
       prints `true`.
-- [ ] `npm run lint` exits 0 with the new file present.
-- [ ] Every action is pinned: `grep -c 'uses:' .github/workflows/ci.yml`
+- [x] `npm run lint` exits 0 with the new file present.
+- [x] Every action is pinned: `grep -c 'uses:' .github/workflows/ci.yml`
       prints `2`, and
       `grep -cE 'uses: actions/(checkout|setup-node)@[0-9a-f]{40} # v[0-9]+\.[0-9]+\.[0-9]+$' .github/workflows/ci.yml`
       prints `2`.
-- [ ] The SHAs match their tags:
+- [x] The SHAs match their tags:
       `gh api repos/actions/checkout/commits/v7.0.1 --jq .sha` prints
       `3d3c42e5aac5ba805825da76410c181273ba90b1`;
       `gh api repos/actions/setup-node/commits/v7.1.0 --jq .sha` prints
@@ -99,7 +99,7 @@ Local, before opening the PR:
 
 On the implementation PR:
 
-- [ ] `gh pr checks <pr> --json name,bucket --jq 'sort_by(.name)[] | "\(.name) \(.bucket)"'`
+- [x] `gh pr checks <pr> --json name,bucket --jq 'sort_by(.name)[] | "\(.name) \(.bucket)"'`
       prints exactly:
 
       ```
@@ -111,31 +111,31 @@ On the implementation PR:
       check (windows-latest, 26) pass
       ```
 
-- [ ] Every job ran the four commands in order:
+- [x] Every job ran the four commands in order:
       `gh run view <run> --json jobs --jq '.jobs[] | "\(.name): \([.steps[] | select(.name | startswith("Run npm")) | .name] | join(", "))"'`
       prints six lines ending in
       `Run npm ci, Run npm run typecheck, Run npm run lint, Run npm test`.
-- [ ] Token scope: `gh run view <run> --log | grep -A2 "GITHUB_TOKEN Permissions"`
+- [x] Token scope: `gh run view <run> --log | grep -A2 "GITHUB_TOKEN Permissions"`
       shows only `Contents: read` and `Metadata: read` for each job.
-- [ ] Cache: after `gh run rerun <run>`, the log of every job contains
+- [x] Cache: after `gh run rerun <run>`, the log of every job contains
       `Cache restored from key:`.
 
 After merge:
 
 - [ ] `gh run list --workflow ci.yml --event push --branch main --limit 1 --json headSha,conclusion`
       returns `conclusion` `success` and `headSha` equal to
-      `git rev-parse origin/main`.
+      `git rev-parse origin/main`. Checked after merge.
 
 Negative tests (manual, not committed): a throwaway draft PR from a
 branch off the implementation branch, closed without merging, branch
 deleted.
 
-- [ ] N1, Windows line endings: a commit that deletes `.gitattributes`
+- [x] N1, Windows line endings: a commit that deletes `.gitattributes`
       → the three `windows-latest` jobs fail at `Run npm run lint` with
       `Formatter would have printed the following content`; the three
       `ubuntu-latest` jobs pass. If the Windows jobs pass, the runner does
       not convert line endings: stop and report.
-- [ ] N2, CI mode: a next commit that restores `.gitattributes` and
+- [x] N2, CI mode: a next commit that restores `.gitattributes` and
       deletes `packages/core/schema/asset.v1.schema.json` → all six jobs
       fail at `Run npm test` with
       ``Snapshot `committed JSON Schema matches the Zod schema 1` mismatched``.
