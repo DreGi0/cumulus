@@ -93,9 +93,12 @@ CI runs on **GitHub Actions**. Rules:
    `npm run typecheck`, `npm run lint`, `npm test`. The test step relies
    on the `CI=true` that GitHub sets; the inline `CI=true npm test` form
    does not parse in `pwsh`.
-3. Matrix: `ubuntu-latest` and `windows-latest` × the newest release of
-   every released Node line in `engines` (today `22`, `24`, `26`), with
-   `fail-fast: false`. A PR that changes `engines` changes the matrix.
+3. Matrix: `ubuntu-latest` and `windows-latest` × every released Node
+   line in `engines` (today `22`, `24`, `26`), with `fail-fast: false`.
+   Each line runs the version setup-node resolves: the runner's cached
+   release of that line, which can trail the newest by a few days. A
+   patch behind does not matter for a range set per major version. A PR
+   that changes `engines` changes the matrix.
 4. `permissions: contents: read` at workflow level. A job that needs more
    declares it in its own `permissions` block.
 5. `actions/checkout` runs with `persist-credentials: false`. Workflows
