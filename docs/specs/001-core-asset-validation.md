@@ -1,0 +1,195 @@
+# TASK-001: Workspace and core asset validation
+
+- Status: Ready
+- Milestone: M1
+- Decisions that apply: ADR-001, ADR-002, ADR-003, ADR-004
+
+## Goal
+
+`@cumulus/core` validates version 1 asset data and either returns it
+typed or throws an error that lists every problem with its path, and the
+generated JSON Schema is committed; this covers the first two M1
+criteria of the PRD.
+
+## Inputs and outputs
+
+Public API, `packages/core/src/index.ts` exports exactly this:
+
+```ts
+export type {
+  Asset, AssetNode, GroupNode, RectNode, EllipseNode, PathNode,
+  PathPoint, Transform, Stroke,
+} from './schema'
+export { parseAsset, AssetError, type AssetIssue } from './parse'
+```
+
+```ts
+/** Validates already-parsed JSON. Returns it typed, or throws AssetError. */
+export function parseAsset(input: unknown): Asset
+
+export interface AssetIssue {
+  /** JSON Pointer (RFC 6901) to the offending value; "" is the root. */
+  path: string
+  message: string
+}
+
+export class AssetError extends Error {
+  readonly name: 'AssetError'
+  readonly issues: readonly AssetIssue[]
+}
+```
+
+Types come from `z.infer` (ADR-003 rule 1). Zod never appears in the
+public API (ADR-003 rule 6).
+
+Order of checks in `parseAsset`:
+
+1. If `input` is an object whose `version` is a number greater than 1,
+   throw with only this issue:
+   `{ path: "/version", message: "version 2 is newer than the supported version 1; update @cumulus/core" }`
+   (with the actual number).
+2. Validate with the Zod schema (ADR-002 rules 1 to 10). Collect every
+   issue in the order Zod reports them.
+3. Only if step 2 passed: check that ids are unique (ADR-002 rule 4).
+
+`AssetError.message` is `Invalid asset (N issue[s]):` followed by one
+line per issue, `  <path or "/">: <message>`. Example with one issue:
+
+```
+Invalid asset (1 issue):
+  /children/0/children/0/fill: must be a color: #rrggbb or #rrggbbaa
+```
+
+Messages are defined by core, not taken from Zod's locale, so they stay
+stable across Zod updates. They are set with schema-level `error` options
+and a per-call error function on `safeParse`; never with `z.config`
+(ADR-003 rule 7). Required messages:
+
+| Case                                      | Message                                                                |
+| ----------------------------------------- | ---------------------------------------------------------------------- |
+| Missing required key                      | `required`                                                             |
+| Wrong JSON type                           | `expected <type>, got <type>`; types are `object`, `array`, `string`, `number`, `boolean`, `null` |
+| Unknown key(s) (path is the object)       | `unknown key "a"` or `unknown keys "a", "b"`                           |
+| Number below an inclusive minimum         | `must be >= <n>`                                                       |
+| Number not above an exclusive minimum     | `must be > <n>`                                                        |
+| Array too short                           | `must have at least <n> items`                                         |
+| Literal mismatch (`version`)              | `must be 1`                                                            |
+| Unknown or missing node `type` (path ends in `/type`) | `must be one of: group, rect, ellipse, path`               |
+| Color pattern                             | `must be a color: #rrggbb or #rrggbbaa`                                |
+| Id pattern                                | `must start with a letter and contain only letters, digits, "-" or "_"` |
+| Duplicate id                              | `duplicate id "<id>", first used at <path of the first id>`            |
+
+Generated JSON Schema: `packages/core/schema/asset.v1.schema.json`, the
+output of `JSON.stringify(z.toJSONSchema(Asset), null, 2)` plus a
+trailing newline. The root has `"title": "Cumulus asset v1"`. These
+fields carry a `description` (shown by editors and read by AI
+assistants): `width`/`height` (artboard size; origin top-left, y down),
+`children` (array order is z-order, first drawn first), `id`,
+`rotation` (degrees, clockwise), `in`/`out` (handle offset relative to
+the point; missing means zero).
+
+Fixtures (hand-written, valid):
+
+- `packages/core/fixtures/face.cumulus.json`: the ADR-002 example,
+  verbatim.
+- `packages/core/fixtures/shapes.cumulus.json`: every M1 feature at
+  least once: `$schema` set to `"../schema/asset.v1.schema.json"`, a
+  `rect`, an `ellipse`, a closed and an open `path`, a nested `group`,
+  every `transform` field, a `#rrggbbaa` fill and a stroke.
+
+## Files
+
+- CREATE: `package.json` (root: `"name": "cumulus"`, `"private": true`,
+  `"type": "module"`, workspaces `["packages/*", "apps/*"]`, `engines`,
+  scripts `typecheck`, `test`, `lint`, `format`; dev dependencies
+  `typescript@~7.0.2`, `vitest@^5.0.5`, `@biomejs/biome@^2.5.15`; all per
+  ADR-004)
+- CREATE: `package-lock.json` (generated by `npm install`)
+- CREATE: `.npmrc` (`engine-strict=true`)
+- CREATE: `tsconfig.base.json` (ADR-004 rule 3)
+- CREATE: `vitest.config.ts` (ADR-004 rule 7)
+- CREATE: `biome.json` (recommended rules; `vcs.useIgnoreFile: true`;
+  excludes `**/fixtures`, `**/schema`, `**/*.cumulus.json`)
+- CREATE: `packages/core/package.json` (`"name": "@cumulus/core"`,
+  `"private": true`, `"type": "module"`, `exports` `./src/index.ts`,
+  script `typecheck`, dependency `zod@^4.6.7`)
+- CREATE: `packages/core/tsconfig.json` (`lib: ["es2023"]`, `types: []`)
+- CREATE: `packages/core/src/index.ts`
+- CREATE: `packages/core/src/schema.ts` (Zod schema and types)
+- CREATE: `packages/core/src/parse.ts` (`parseAsset`, `AssetError`,
+  messages, version and id checks)
+- CREATE: `packages/core/src/schema.test.ts`
+- CREATE: `packages/core/src/parse.test.ts`
+- CREATE: `packages/core/schema/asset.v1.schema.json` (generated by the
+  test)
+- CREATE: `packages/core/fixtures/face.cumulus.json`
+- CREATE: `packages/core/fixtures/shapes.cumulus.json`
+- EDIT: `CLAUDE.md` (replace "Commands: none yet…" with the install,
+  typecheck, test, lint and format commands)
+- DO NOT TOUCH: everything else
+
+## Acceptance tests
+
+Each test is pass/fail and runnable. "Base" is the `face` fixture; paths
+below refer to it (`/children/0/children/0` is `head`,
+`/children/0/children/1` is `mouth`).
+
+- [ ] Both fixtures: `parseAsset` returns a value deep-equal to the input.
+- [ ] `schema.test.ts`: generated JSON Schema equals the committed
+      `asset.v1.schema.json` (`toMatchFileSnapshot`).
+- [ ] Base with head `fill: "#fff"` → one issue
+      `/children/0/children/0/fill`: `must be a color: #rrggbb or #rrggbbaa`.
+- [ ] Base with head `stroke: { "colour": "#000000", "width": 1 }` →
+      issues `/children/0/children/0/stroke/color`: `required` and
+      `/children/0/children/0/stroke`: `unknown key "colour"`, in this order.
+- [ ] Base with mouth `id` removed → one issue
+      `/children/0/children/1/id`: `required`.
+- [ ] Base with head `id: "1head"` → one issue `/children/0/children/0/id`:
+      `must start with a letter and contain only letters, digits, "-" or "_"`.
+- [ ] Base with head `rx: -1` → one issue `/children/0/children/0/rx`: `must be >= 0`.
+- [ ] Base with `width: 0` → one issue `/width`: `must be > 0`.
+- [ ] Base with `width: "128"` → one issue `/width`: `expected number, got string`.
+- [ ] Base with mouth reduced to 1 point → one issue
+      `/children/0/children/1/points`: `must have at least 2 items`.
+- [ ] Base with head `type: "circle"` → one issue
+      `/children/0/children/0/type`: `must be one of: group, rect, ellipse, path`.
+- [ ] Base with `version: "1"` → one issue `/version`: `must be 1`.
+- [ ] Base with `version: 2` and `width: -5` → only one issue `/version`:
+      `version 2 is newer than the supported version 1; update @cumulus/core`.
+- [ ] Base with mouth `id: "head"` → one issue `/children/0/children/1/id`:
+      `duplicate id "head", first used at /children/0/children/0/id`.
+- [ ] Edge case: `null` → one issue with path `""`: `expected object, got null`;
+      `AssetError.message` is `Invalid asset (1 issue):\n  /: expected object, got null`.
+- [ ] Edge case: base with head `fill: "#fff"` and `rx: -1` → exactly two
+      issues, `fill` before `rx`; message starts with `Invalid asset (2 issues):`.
+- [ ] Thrown value is `instanceof AssetError` and `name === "AssetError"`.
+- [ ] Boundaries (manual, not committed): adding
+      `export const t = document.title` to `packages/core/src/index.ts`
+      makes `npm run typecheck` fail with `TS2584`; revert after.
+
+Verification commands, from a clean clone:
+
+```sh
+npm ci
+npm run typecheck   # exit 0
+npm run lint        # exit 0
+CI=true npm test    # exit 0, every test above passes
+```
+
+## Out of scope
+
+- Serializer and canonical output (ADR-002 rule 12): with the editor's
+  save in M2.
+- Applying defaults (`transform` fields, missing handles): renderers or a
+  later core helper.
+- Parsing JSON text, reading files, a CLI: callers pass parsed data; the
+  CLI is M4.
+- Migrations: there is only version 1.
+- Renderers, playground apps, `examples/`: their own specs.
+- Validating fixtures with a second JSON Schema validator (Ajv): done in
+  the spike, not a dependency.
+- CI workflow (GitHub Actions): own task.
+
+## If the spec is silent
+
+Stop and ask. Do not add dependencies or make design decisions.
