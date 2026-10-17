@@ -1,0 +1,62 @@
+{
+  "$schema": "../schema/asset.v1.schema.json",
+  "version": 1,
+  "width": 200,
+  "height": 120,
+  "children": [
+    {
+      "type": "rect",
+      "id": "background",
+      "x": 0,
+      "y": 0,
+      "width": 200,
+      "height": 120,
+      "fill": "#f4f4f8"
+    },
+    {
+      "type": "group",
+      "id": "badge",
+      "transform": { "x": 100, "y": 60, "rotation": 15, "scaleX": 1.5, "scaleY": 0.75 },
+      "children": [
+        {
+          "type": "ellipse",
+          "id": "halo",
+          "cx": 0,
+          "cy": 0,
+          "rx": 40,
+          "ry": 30,
+          "fill": "#3355ff80"
+        },
+        {
+          "type": "group",
+          "id": "marks",
+          "children": [
+            {
+              "type": "path",
+              "id": "triangle",
+              "closed": true,
+              "points": [
+                { "x": -10, "y": 8 },
+                { "x": 10, "y": 8 },
+                { "x": 0, "y": -10 }
+              ],
+              "fill": "#ffffff",
+              "stroke": { "color": "#1a1a2e", "width": 1.5 }
+            },
+            {
+              "type": "path",
+              "id": "swoosh",
+              "transform": { "y": 14 },
+              "closed": false,
+              "points": [
+                { "x": -16, "y": 0, "out": { "x": 8, "y": 6 } },
+                { "x": 16, "y": 0, "in": { "x": -8, "y": 6 } }
+              ],
+              "stroke": { "color": "#1a1a2e", "width": 2 }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
