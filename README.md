@@ -4,6 +4,7 @@ Open-source vector editor and animation toolkit for mascots, icons and UI motion
 
 ![Status: pre-alpha](https://img.shields.io/badge/status-pre--alpha-orange)
 ![License: MIT](https://img.shields.io/badge/license-MIT-blue)
+
 <!-- Add build, npm and coverage badges once CI and publishing exist. -->
 
 > [!WARNING]
@@ -59,8 +60,8 @@ milestone M4.
 Illustrative sketch of the planned API. It will change.
 
 ```tsx
-import { Asset } from '@cumulus/renderer-rn';
-import nimbus from './assets/nimbus.json';
+import { Asset } from "@cumulus/renderer-rn";
+import nimbus from "./assets/nimbus.json";
 
 export function Mascot({ mood }: { mood: string }) {
   return <Asset source={nimbus} state={mood} />;
@@ -81,12 +82,12 @@ docs/                    PRD and decision records
 
 ## Roadmap
 
-| Milestone | Goal                          |
-| --------- | ----------------------------- |
-| M1        | Format and renderers          |
-| M2        | Vector editor                 |
-| M3        | Animation and state machines  |
-| M4        | Packages, CLI and docs        |
+| Milestone | Goal                         |
+| --------- | ---------------------------- |
+| M1        | Format and renderers         |
+| M2        | Vector editor                |
+| M3        | Animation and state machines |
+| M4        | Packages, CLI and docs       |
 
 Details and acceptance criteria are in the [PRD](docs/PRD.md).
 
@@ -107,4 +108,4 @@ This project follows a [Code of Conduct](CODE_OF_CONDUCT.md).
 
 ## License
 
-[MIT](LICENSE) © 2026 <<REPLACE: your full name>>
+[MIT](LICENSE) © 2026 DreGi0
