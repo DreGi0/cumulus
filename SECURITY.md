@@ -6,10 +6,10 @@ Cumulus has no stable release yet. Until the first release, security fixes
 apply to the latest commit on `main`. This table will list supported
 versions once packages are published.
 
-| Version | Supported                |
-| ------- | ------------------------ |
-| `main`  | Yes                      |
-| < 1.0   | Latest release only      |
+| Version | Supported           |
+| ------- | ------------------- |
+| `main`  | Yes                 |
+| < 1.0   | Latest release only |
 
 ## Reporting a vulnerability
 
@@ -19,7 +19,7 @@ Report privately using either:
 
 1. GitHub private vulnerability reporting: go to the repository's
    **Security** tab and choose **Report a vulnerability**.
-2. Email <<REPLACE: security contact email>>.
+2. Email andreiraheta28@gmail.com.
 
 Include:
 
@@ -29,7 +29,7 @@ Include:
 
 ## What to expect
 
-- Acknowledgement within <<REPLACE: 7>> days.
+- Acknowledgement within 7 days.
 - An assessment and a plan or fix timeline after triage.
 - Credit in the release notes if you want it.
 
