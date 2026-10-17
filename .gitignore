@@ -27,3 +27,10 @@ npm-debug.log*
 .vscode/
 .DS_Store
 Thumbs.db
+
+# Claude Code personal instructions (not shared)
+CLAUDE.local.md
+
+# Spike scratch space and personal Claude settings
+.scratch/
+.claude/settings.local.json
